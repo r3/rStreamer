@@ -17,8 +17,13 @@ class TestDirectLink():
             parser.read_file(source)
         return parser
 
+    def test_config_on_instantiation(self, mocker):
+        mocker.spy(source_managers.DirectLinkManager, 'configure')
+        source_managers.DirectLinkManager()
+        assert source_managers.DirectLinkManager.configure.call_count == 1
+
     def test_is_configured(self, manager):
-        assert manager._config
+        assert source_managers.DirectLinkManager._config
 
     def test_accepted_extensions_exists(self, manager):
         assert manager.accepted_extensions
