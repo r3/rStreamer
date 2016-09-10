@@ -8,7 +8,10 @@ from rStream.libs import source_managers
 @pytest.mark.parametrize('test_url,expected_extension', [
     ('http://test.com/', ''),
     ('http://test.com/foo', ''),
-    ('http://test.com/foo.bar', 'bar'),
+    ('http://test.com/foo.bar', '.bar'),
+    ('http://test.com/foo.bar?baz', '.bar'),
+    ('http://test.com/foo.bar?baz=qux', '.bar'),
+    ('http://test.com/foo.bar?baz=qux&lorem=ipsem', '.bar'),
 ])
 def test_ext_from_url(test_url, expected_extension):
     assert source_managers.ext_from_url(test_url) == expected_extension

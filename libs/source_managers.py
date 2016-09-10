@@ -1,5 +1,16 @@
 import configparser
+import os
+from urllib import parse
+
+
 CONFIG_FILE = '../config.ini'
+
+
+def ext_from_url(url):
+    path = parse.urlparse(url).path
+    cleaned_path = path[1:]
+    __, extension = os.path.splitext(cleaned_path)
+    return extension
 
 
 class DirectLinkManager():
