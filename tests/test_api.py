@@ -8,6 +8,6 @@ def client():
     return app.test_client()
 
 
-def test_response_is_200(client):
+def test_root_response_is_200(client):
     response = client.get('/')
-    assert response.status == 200
+    assert '200' in response.status
