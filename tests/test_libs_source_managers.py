@@ -5,6 +5,15 @@ import pytest
 from rStream.libs import source_managers
 
 
+@pytest.mark.parametrize('test_url,expected_extension', [
+    ('http://test.com/', ''),
+    ('http://test.com/foo', ''),
+    ('http://test.com/foo.bar', 'bar'),
+])
+def test_ext_from_url(test_url, expected_extension):
+    assert source_managers.ext_from_url(test_url) == expected_extension
+
+
 class TestDirectLink():
     @pytest.fixture()
     def manager(self):
@@ -28,6 +37,7 @@ class TestDirectLink():
     def test_accepted_extensions_exists(self, manager):
         assert manager.accepted_extensions
 
+    @pytest.mark.xfail  # TODO: Remove this once you implement the match meth
     def test_match_extensions_from_config(self, manager, config):
         extensions = config.get('directlink', 'AcceptedExtensions').split(',')
         for ext in extensions:
