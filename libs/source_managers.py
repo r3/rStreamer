@@ -17,3 +17,7 @@ class DirectLinkManager():
             cls._config.read_file(source)
         extensions = cls._config.get('directlink', 'AcceptedExtensions')
         cls.accepted_extensions = extensions.split(',')
+
+    @classmethod
+    def match(cls, url):
+        pass
