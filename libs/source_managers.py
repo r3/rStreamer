@@ -32,3 +32,7 @@ class DirectLinkManager():
     @classmethod
     def match(cls, url):
         return ext_from_url(url) in cls.accepted_extensions
+
+    @classmethod
+    def get_images(cls, url):
+        yield url
