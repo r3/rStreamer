@@ -2,8 +2,7 @@ import configparser
 import os
 from urllib import parse
 
-
-CONFIG_FILE = '../config.ini'
+from rStream import CONFIG_FILE
 
 
 def ext_from_url(url):
@@ -15,6 +14,7 @@ def ext_from_url(url):
 
 class DirectLinkManager():
     _config = None
+    accepted_extensions = []
 
     def __init__(self):
         if self._config is None:
