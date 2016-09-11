@@ -44,3 +44,10 @@ class TestDirectLink():
                             'accepted_extensions',
                             ['.foo'])
         assert source_managers.DirectLinkManager.match(url) == is_match
+
+    def test_get_images(self, manager):
+        url = 'http://test.com/test.foo'
+        results = manager.get_images(url)
+        assert next(results) == url
+        with pytest.raises(StopIteration):
+            next(results)
