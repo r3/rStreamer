@@ -1,5 +1,3 @@
-import configparser
-
 import pytest
 
 from rStream.libs import source_managers
@@ -22,13 +20,6 @@ class TestDirectLink():
     def manager(self):
         return source_managers.DirectLinkManager()
 
-    @pytest.fixture()
-    def config(self):
-        parser = configparser.ConfigParser()
-        with open(source_managers.CONFIG_FILE) as source:
-            parser.read_file(source)
-        return parser
-
     def test_config_on_instantiation(self, mocker):
         mocker.spy(source_managers.DirectLinkManager, 'configure')
         source_managers.DirectLinkManager()
@@ -40,9 +31,16 @@ class TestDirectLink():
     def test_accepted_extensions_exists(self, manager):
         assert manager.accepted_extensions
 
-    @pytest.mark.xfail  # TODO: Remove this once you implement the match meth
-    def test_match_extensions_from_config(self, manager, config):
-        extensions = config.get('directlink', 'AcceptedExtensions').split(',')
-        for ext in extensions:
-            test_url = 'http://test.com/file{}'.format(ext)
-            assert manager.match(test_url)
+    @pytest.mark.parametrize('url,is_match', [
+        ('http://test.com', False),
+        ('http://test.com/', False),
+        ('http://test.com/test.foo', True),
+        ('http://test.com/test.bar', False),
+        ('http://test.com/test.foo?bar=baz', True),
+        ('http://test.com/test.foo?bar=baz&qux', True),
+    ])
+    def test_match_extensions_from_config(self, monkeypatch, url, is_match):
+        monkeypatch.setattr(source_managers.DirectLinkManager,
+                            'accepted_extensions',
+                            ['.foo'])
+        assert source_managers.DirectLinkManager.match(url) == is_match

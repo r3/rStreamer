@@ -31,4 +31,4 @@ class DirectLinkManager():
 
     @classmethod
     def match(cls, url):
-        pass
+        return ext_from_url(url) in cls.accepted_extensions
