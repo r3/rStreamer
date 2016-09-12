@@ -56,3 +56,31 @@ class TestDirectLink():
         assert next(results) == url
         with pytest.raises(StopIteration):
             next(results)
+
+
+class TestGfycatLink():
+    @pytest.fixture()
+    def manager(self):
+        return source_managers.GfycatLink()
+
+    @pytest.mark.parametrize('url,is_match', [
+        ('http://gfycat.com/', False),
+        ('http://test.com/', False),
+        ('http://gfycat.com/Foo', True),
+        ('http://giant.gfycat.com/Foo.gif', True),
+    ])
+    def test_match(self, manager, url, is_match):
+        assert manager.match(url) == is_match
+
+    @pytest.mark.parametrize('link,image_url', [
+        ('http://gfycat.com/Foobar', 'http://giant.gfycat.com/Foobar.gif'),
+        ('http://gfycat.com/', None),
+        ('http://giant.gfycat.com/Foo.webm',
+         'http://giant.gfycat.com/Foo.webm'),
+        ('http://giant.gfycat.com/Foo.gif', 'http://giant.gfycat.com/Foo.gif')
+    ])
+    def test_get_images(self, manager, link, image_url):
+        results = manager.get_images(link)
+        assert next(results) == image_url
+        with pytest.raises(StopIteration):
+            next(results)
