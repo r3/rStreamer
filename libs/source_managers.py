@@ -5,10 +5,16 @@ from urllib import parse
 from rStream import CONFIG_FILE
 
 
+# TODO: http://imgur.com/ajaxalbums/getimages/ALBUM_ID/hit.json
+
+
 def ext_from_url(url):
     path = parse.urlparse(url).path
-    cleaned_path = path[1:]
-    __, extension = os.path.splitext(cleaned_path)
+    if path.startswith('/'):
+        path = path[1:]
+    if not path:
+        return ''
+    __, extension = os.path.splitext(path)
     return extension
 
 
@@ -36,3 +42,21 @@ class DirectLinkManager():
     @classmethod
     def get_images(cls, url):
         yield url
+
+
+class GfycatManager():
+    @classmethod
+    def match(cls, url):
+        parsed = parse.urlparse(url)
+        return 'gfycat.com' in parsed.netloc and parsed.path != '/'
+
+    @classmethod
+    def get_images(cls, url):
+        file_name = parse.urlparse(url).path
+        name, extension = os.path.splitext(file_name)
+        if not extension:
+            extension = '.gif'
+        if name.startswith('/'):
+            name = name[1:]
+        if name:
+            yield 'http://giant.gfycat.com/{}{}'.format(name, extension)

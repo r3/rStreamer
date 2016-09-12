@@ -15,7 +15,7 @@ def test_ext_from_url(test_url, expected_extension):
     assert source_managers.ext_from_url(test_url) == expected_extension
 
 
-class TestDirectLink():
+class TestDirectLinkManager():
     @pytest.fixture()
     def manager(self):
         return source_managers.DirectLinkManager()
@@ -58,10 +58,10 @@ class TestDirectLink():
             next(results)
 
 
-class TestGfycatLink():
+class TestGfycatManager():
     @pytest.fixture()
     def manager(self):
-        return source_managers.GfycatLink()
+        return source_managers.GfycatManager()
 
     @pytest.mark.parametrize('url,is_match', [
         ('http://gfycat.com/', False),
@@ -81,6 +81,11 @@ class TestGfycatLink():
     ])
     def test_get_images(self, manager, link, image_url):
         results = manager.get_images(link)
-        assert next(results) == image_url
-        with pytest.raises(StopIteration):
-            next(results)
+
+        if image_url is None:
+            with pytest.raises(StopIteration):
+                next(results)
+        else:
+            assert next(results) == image_url
+            with pytest.raises(StopIteration):
+                next(results)
