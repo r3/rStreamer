@@ -63,12 +63,10 @@ class GfycatManager():
 
 
 class ImgurManager():
-    _config = None
-
-    def __init__(self):
-        if self._config is None:
-            self.configure()
+    @classmethod
+    def match(cls, url):
+        pass
 
     @classmethod
-    def configure(cls):
-        cls._config = dict()
+    def get_images(cls, url):
+        pass

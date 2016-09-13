@@ -97,11 +97,22 @@ class TestImgurManager():
     def manager(self):
         return source_managers.ImgurManager()
 
-    def test_config_on_instantiation(self, mocker):
-        mocker.spy(source_managers.ImgurManager, 'configure')
-        source_managers.ImgurManager()
-        source_managers.ImgurManager()
-        assert source_managers.ImgurManager.configure.call_count == 1
+    @pytest.mark.parametrize('url,is_match', [
+        (),
+    ])
+    def test_match(self, manager, url, is_match):
+        assert manager.match(url) == is_match
 
-    def test_is_configured(self, manager):
-        assert hasattr(source_managers.DirectLinkManager._config, 'get')
+    @pytest.mark.parametrize('url,image_url', [
+        (),
+    ])
+    def test_get_images(self, manager, url, image_url):
+        results = manager.get_images(url)
+
+        if image_url is None:
+            with pytest.raises(StopIteration):
+                next(results)
+        else:
+            assert next(results) == image_url
+            with pytest.raises(StopIteration):
+                next(results)
