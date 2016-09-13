@@ -60,3 +60,15 @@ class GfycatManager():
             name = name[1:]
         if name:
             yield 'http://giant.gfycat.com/{}{}'.format(name, extension)
+
+
+class ImgurManager():
+    _config = None
+
+    def __init__(self):
+        if self._config is None:
+            self.configure()
+
+    @classmethod
+    def configure(cls):
+        cls._config = dict()
