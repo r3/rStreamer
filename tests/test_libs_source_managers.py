@@ -21,8 +21,9 @@ class TestDirectLinkManager():
         return source_managers.DirectLinkManager()
 
     def test_config_on_instantiation(self, mocker):
-        '''Ensure that the configure method is called on instantiation'''
+        '''Ensure that the configure method is called on first instantiation'''
         mocker.spy(source_managers.DirectLinkManager, 'configure')
+        source_managers.DirectLinkManager()
         source_managers.DirectLinkManager()
         assert source_managers.DirectLinkManager.configure.call_count == 1
 
@@ -89,3 +90,18 @@ class TestGfycatManager():
             assert next(results) == image_url
             with pytest.raises(StopIteration):
                 next(results)
+
+
+class TestImgurManager():
+    @pytest.fixture()
+    def manager(self):
+        return source_managers.ImgurManager()
+
+    def test_config_on_instantiation(self, mocker):
+        mocker.spy(source_managers.ImgurManager, 'configure')
+        source_managers.ImgurManager()
+        source_managers.ImgurManager()
+        assert source_managers.ImgurManager.configure.call_count == 1
+
+    def test_is_configured(self, manager):
+        assert hasattr(source_managers.DirectLinkManager._config, 'get')
