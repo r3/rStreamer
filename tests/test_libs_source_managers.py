@@ -203,8 +203,7 @@ class TestImgurManager():
 
         monkeypatch.setattr(request, 'urlopen', mock_urlopen)
 
-        parsed = parse.urlparse(url)
-        results = manager.get_images(parsed)
+        results = manager.get_images(url)
 
         if images is None:
             with pytest.raises(StopIteration):
@@ -227,3 +226,58 @@ class TestImgurManager():
         album_url = 'http://imgur.com/a/Foo'
         next(manager.get_images(album_url))
         assert source_managers.ImgurManager._get_album.call_count == 1
+
+
+class TestDeviantArtManager():
+    @pytest.fixture()
+    def manager(self):
+        return source_managers.DeviantArtManager()
+
+    @pytest.mark.parametrize('url,is_match', [
+        # Obviously not a deviantart image
+        ('http://foo.bar', False),
+        # These one is a link to deviantart, but no image specified; no match
+        ('http://deviantart.com/', False),
+        ('http://deviantart.com/art/', False),
+        ('http://foo.deviantart.com/', False),
+        ('http://foo.deviantart.com/art/', False),
+        # This lacks the '/art/' path and would 404 on request
+        ('http://foo.deviantart.com/bar', False),
+        # This one is valid
+        ('http://foo.deviantart.com/art/bar-123456', True),
+        # Even without the username in the domain, it should work
+        # This URL points to the same resource as above
+        ('http://deviantart.com/art/bar-123456', True),
+    ])
+    def test_match(self, manager, url, is_match):
+        assert manager.match(url) == is_match
+
+    @pytest.mark.parametrize('url,image', [
+        ('http://foo.deviantart.com/art/bar-123456',
+         'http://pre00.deviantart.net/foo/th/pre/f/0000/000/0/f/bar.baz'),
+    ])
+    def test_get_images(self, monkeypatch, manager, url, image):
+        class MockResponse():
+            def read(*args, **kwargs):
+                result = json.dumps({
+                    'url': ('http://pre00.deviantart.net/foo/'
+                            'th/pre/f/0000/000/0/f/bar.baz'),
+                })
+
+                return bytes(result, 'utf8')
+
+        @contextmanager
+        def mock_urlopen(*args, **kwargs):
+            yield MockResponse()
+
+        monkeypatch.setattr(request, 'urlopen', mock_urlopen)
+
+        results = manager.get_images(url)
+
+        if image is None:
+            with pytest.raises(StopIteration):
+                next(results)
+        else:
+            assert next(results) == image
+            with pytest.raises(StopIteration):
+                next(results)

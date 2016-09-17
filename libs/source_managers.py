@@ -107,3 +107,25 @@ class ImgurManager():
             yield from cls._get_album(parsed)
         else:
             yield from cls._get_single_image(parsed)
+
+
+class DeviantArtManager():
+    query_url = 'http://backend.deviantart.com/oembed?url={}'
+
+    @classmethod
+    def match(cls, url):
+        fragment = '/art/'
+        parsed = parse.urlparse(url)
+
+        if fragment not in parsed.path or len(parsed.path) <= len(fragment):
+            return False
+
+        return parsed.netloc.endswith('deviantart.com')
+
+    @classmethod
+    def get_images(cls, url):
+        encoded = parse.quote(url, safe="~()*!.'")
+        with request.urlopen(cls.query_url.format(encoded)) as response:
+            raw = response.read()
+            results = json.loads(raw.decode())
+        yield results['url']
