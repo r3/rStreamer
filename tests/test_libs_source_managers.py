@@ -146,9 +146,6 @@ class TestImgurManager():
         assert manager.match(url) == is_match
 
     @pytest.mark.parametrize('url,image', [
-        # No images referenced
-        ('http://imgur.com/', None),
-        ('http://i.imgur.com/', None),
         # We don't bother check the extension for imgur links, clean results
         ('http://imgur.com/foo.bar', 'http://i.imgur.com/foo.bar'),
         # Identity should work
@@ -157,7 +154,7 @@ class TestImgurManager():
         ('http://i.imgur.com/foo.bar/', 'http://i.imgur.com/foo.bar'),
     ])
     def test__get_single_image(self, manager, url, image):
-        result = manager.__get_single_image(url)
+        result = manager._get_single_image(url)
         assert next(result) == image
 
     @pytest.mark.parametrize('url,images', [
@@ -214,14 +211,17 @@ class TestImgurManager():
             result = list(manager.get_images(url))
             assert result == images
 
-    def test_get_images(self, mocker, manager):
+    def test_get_images(self, mocker, monkeypatch, manager):
         '''Ensures that get_images routes properly to support methods'''
-        mocker.spy(source_managers.ImgurManager, '__get_single_image')
+        mocker.spy(source_managers.ImgurManager, '_get_single_image')
         image_url = 'http://i.imgur.com/Foo.bar'
-        manager.get_images(image_url)
-        assert manager.__get_single_image.call_count == 1
+        next(manager.get_images(image_url))
+        assert source_managers.ImgurManager._get_single_image.call_count == 1
 
-        mocker.spy(source_managers.ImgurManager, '__get_album')
+        monkeypatch.setattr(source_managers.ImgurManager,
+                            '_get_album',
+                            lambda x: x)
+        mocker.spy(source_managers.ImgurManager, '_get_album')
         album_url = 'http://imgur.com/a/Foo'
-        manager.get_images(album_url)
-        assert manager.__get_album.call_count == 1
+        next(manager.get_images(album_url))
+        assert source_managers.ImgurManager._get_album.call_count == 1

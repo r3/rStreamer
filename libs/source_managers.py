@@ -66,6 +66,31 @@ class ImgurManager():
     album_template = 'http://imgur.com/ajaxalbums/getimages/{}/hit.json'
 
     @classmethod
+    def _get_single_image(cls, url):
+        parsed = parse.urlparse(url)
+        if parsed.path.endswith('/'):
+            path = parsed.path[:-1]
+        else:
+            path = parsed.path
+
+        image_id = path.split('/')[-1]
+        yield cls.image_template.format(image_id)
+
+    @classmethod
+    def _get_album(cls, url):
+        parsed = parse.urlparse(url)
+        index = -2 if parsed.path.endswith('/') else -1
+        album_id = parsed.path.split('/')[index]
+        album_json = cls.album_template.format(album_id)
+        with request.urlopen(album_json) as response:
+            raw = response.read()
+            results = json.loads(raw.decode())
+
+        for result in results['data']['images']:
+            image_id = result['hash'] + result['ext']
+            yield cls.image_template.format(image_id)
+
+    @classmethod
     def match(cls, url):
         parsed = parse.urlparse(url)
         return 'imgur.com' in parsed.netloc and parsed.path != '/'
@@ -76,23 +101,7 @@ class ImgurManager():
             return
 
         parsed = parse.urlparse(url)
-
         if parsed.path.startswith('/a/'):
-            index = -2 if parsed.path.endswith('/') else -1
-            album_id = parsed.path.split('/')[index]
-            album_json = cls.album_template.format(album_id)
-            with request.urlopen(album_json) as response:
-                raw = response.read()
-                results = json.loads(raw.decode())
-
-            for result in results['data']['images']:
-                image_id = result['hash'] + result['ext']
-                yield cls.image_template.format(image_id)
+            yield from cls._get_album(url)
         else:
-            if parsed.path.endswith('/'):
-                path = parsed.path[:-1]
-            else:
-                path = parsed.path
-
-            image_id = path.split('/')[-1]
-            yield cls.image_template.format(image_id)
+            yield from cls._get_single_image(url)
