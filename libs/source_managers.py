@@ -79,10 +79,14 @@ class ImgurManager():
     @classmethod
     def _get_album(cls, url):
         parsed = parse.urlparse(url)
-        index = -2 if parsed.path.endswith('/') else -1
-        album_id = parsed.path.split('/')[index]
-        album_json = cls.album_template.format(album_id)
-        with request.urlopen(album_json) as response:
+        if parsed.path.endswith('/'):
+            path = parsed.path[:-1]
+        else:
+            path = parsed.path
+
+        *__, album_id = path.split('/')
+        json_address = cls.album_template.format(album_id)
+        with request.urlopen(json_address) as response:
             raw = response.read()
             results = json.loads(raw.decode())
 
