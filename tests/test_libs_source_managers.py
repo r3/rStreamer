@@ -1,3 +1,6 @@
+import json
+from urllib import request
+
 import pytest
 
 from rStream.libs import source_managers
@@ -58,8 +61,11 @@ class TestDirectLinkManager():
                             ['.foo'])
         assert source_managers.DirectLinkManager.match(url) == is_match
 
-    def test_valid_get_images(self, manager):
+    def test_valid_get_images(self, monkeypatch, manager):
         '''DirectLinkManager only returns the passed url, in a generator'''
+        monkeypatch.setattr(source_managers.DirectLinkManager,
+                            'accepted_extensions',
+                            ['.foo'])
         url = 'http://test.com/test.foo'
         results = manager.get_images(url)
         assert next(results) == url
@@ -171,7 +177,20 @@ class TestImgurManager():
         ]),
 
     ])
-    def test_get_images(self, manager, url, images):
+    def test_get_images(self, monkeypatch, manager, url, images):
+        def mock_urlopen(*args, **kwargs):
+            return json.dumps({
+                'data': {
+                    'images': [
+                        'http://i.imgur.com/1.ext',
+                        'http://i.imgur.com/2.ext',
+                        'http://i.imgur.com/3.ext',
+                    ]
+                }
+            })
+
+        monkeypatch.setattr(request, 'urlopen', mock_urlopen)
+
         results = manager.get_images(url)
 
         if images is None:

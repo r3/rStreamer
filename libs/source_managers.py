@@ -1,11 +1,9 @@
 import configparser
+import json
 import os
-from urllib import parse
+from urllib import parse, request
 
 from rStream import CONFIG_FILE
-
-
-# TODO: http://imgur.com/ajaxalbums/getimages/ALBUM_ID/hit.json
 
 
 def ext_from_url(url):
@@ -41,13 +39,16 @@ class DirectLinkManager():
 
     @classmethod
     def get_images(cls, url):
-        yield url
+        if cls.match(url):
+            yield url
 
 
 class GfycatManager():
     @classmethod
     def match(cls, url):
         parsed = parse.urlparse(url)
+        if 'giant' in parsed.netloc and ext_from_url(url) == '':
+            return False
         return 'gfycat.com' in parsed.netloc and parsed.path != '/'
 
     @classmethod
@@ -63,10 +64,29 @@ class GfycatManager():
 
 
 class ImgurManager():
+    image_template = 'http://i.imgur.com/{}'
+    album_template = 'http://imgur.com/ajaxalbums/getimages/{}/hit.json'
+
     @classmethod
     def match(cls, url):
-        pass
+        parsed = parse.urlparse(url)
+        return 'imgur.com' in parsed.netloc and parsed.path != '/'
 
     @classmethod
     def get_images(cls, url):
-        pass
+        parsed = parse.urlparse(url)
+
+        if parsed.netloc.startswith('i.') or ext_from_url(url):
+            yield cls.image_template.format(parsed.path[1:])
+        else:
+            # is album
+            index = -2 if parsed.path.endswith('/') else -1
+            album_id = parsed.path.split('/')[index]
+            album_json = cls.album_template.format(album_id)
+            with request.urlopen(album_json) as response:
+                raw = response.read()
+                results = json.loads(raw.decode())
+
+            for result in results['data']['images']:
+                image_id = result['hash'] + result['ext']
+                yield cls.image_template.format(image_id)
