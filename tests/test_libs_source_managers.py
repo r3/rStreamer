@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 import json
 from urllib import request
 
@@ -101,24 +102,21 @@ class TestGfycatManager():
 
     # Note that `None` is used as a sentinel for an empty iterable
     # the get_images methods should be generator-like.
-    @pytest.mark.parametrize('link,image_url', [
+    @pytest.mark.parametrize('url,image_url', [
         # We're pulling the GIF from our links, though this may change
-        ('http://gfycat.com/Foobar', [
-            'http://giant.gfycat.com/Foobar.gif',
-        ]),
+        ('http://gfycat.com/Foobar',
+            'http://giant.gfycat.com/Foobar.gif'),
         # No images referenced
         ('http://gfycat.com/', None),
         # Again, pulling GIF files, even from direct references to alt formats
-        ('http://giant.gfycat.com/Foo.webm', [
-            'http://giant.gfycat.com/Foo.gif',
-        ]),
+        ('http://giant.gfycat.com/Foo.webm',
+            'http://giant.gfycat.com/Foo.gif'),
         # The old identity
-        ('http://giant.gfycat.com/Foo.gif', [
-            'http://giant.gfycat.com/Foo.gif',
-        ]),
+        ('http://giant.gfycat.com/Foo.gif',
+            'http://giant.gfycat.com/Foo.gif'),
     ])
-    def test_get_images(self, manager, link, image_url):
-        results = manager.get_images(link)
+    def test_get_images(self, manager, url, image_url):
+        results = manager.get_images(url)
 
         if image_url is None:
             with pytest.raises(StopIteration):
@@ -178,16 +176,32 @@ class TestImgurManager():
 
     ])
     def test_get_images(self, monkeypatch, manager, url, images):
+        class MockResponse():
+            def read(*args, **kwargs):
+                result = json.dumps({
+                    'data': {
+                        'images': [
+                            {
+                                'hash': '1',
+                                'ext': 'ext'
+                            },
+                            {
+                                'hash': '2',
+                                'ext': 'ext'
+                            },
+                            {
+                                'hash': '3',
+                                'ext': 'ext'
+                            },
+                        ]
+                    }
+                })
+
+                return bytes(result, 'utf8')
+
+        @contextmanager
         def mock_urlopen(*args, **kwargs):
-            return json.dumps({
-                'data': {
-                    'images': [
-                        'http://i.imgur.com/1.ext',
-                        'http://i.imgur.com/2.ext',
-                        'http://i.imgur.com/3.ext',
-                    ]
-                }
-            })
+            yield MockResponse()
 
         monkeypatch.setattr(request, 'urlopen', mock_urlopen)
 

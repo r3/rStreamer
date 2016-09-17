@@ -54,13 +54,11 @@ class GfycatManager():
     @classmethod
     def get_images(cls, url):
         file_name = parse.urlparse(url).path
-        name, extension = os.path.splitext(file_name)
-        if not extension:
-            extension = '.gif'
+        name, __ = os.path.splitext(file_name)
         if name.startswith('/'):
             name = name[1:]
         if name:
-            yield 'http://giant.gfycat.com/{}{}'.format(name, extension)
+            yield 'http://giant.gfycat.com/{}.gif'.format(name)
 
 
 class ImgurManager():
@@ -74,6 +72,9 @@ class ImgurManager():
 
     @classmethod
     def get_images(cls, url):
+        if not cls.match(url):
+            return
+
         parsed = parse.urlparse(url)
 
         if parsed.netloc.startswith('i.') or ext_from_url(url):
