@@ -1,6 +1,6 @@
 from contextlib import contextmanager
 import json
-from urllib import request
+from urllib import parse, request
 
 import pytest
 
@@ -154,7 +154,8 @@ class TestImgurManager():
         ('http://i.imgur.com/foo.bar/', 'http://i.imgur.com/foo.bar'),
     ])
     def test__get_single_image(self, manager, url, image):
-        result = manager._get_single_image(url)
+        parsed = parse.urlparse(url)
+        result = manager._get_single_image(parsed)
         assert next(result) == image
 
     @pytest.mark.parametrize('url,images', [
@@ -202,7 +203,8 @@ class TestImgurManager():
 
         monkeypatch.setattr(request, 'urlopen', mock_urlopen)
 
-        results = manager.get_images(url)
+        parsed = parse.urlparse(url)
+        results = manager.get_images(parsed)
 
         if images is None:
             with pytest.raises(StopIteration):

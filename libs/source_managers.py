@@ -66,8 +66,7 @@ class ImgurManager():
     album_template = 'http://imgur.com/ajaxalbums/getimages/{}/hit.json'
 
     @classmethod
-    def _get_single_image(cls, url):
-        parsed = parse.urlparse(url)
+    def _get_single_image(cls, parsed):
         if parsed.path.endswith('/'):
             path = parsed.path[:-1]
         else:
@@ -77,8 +76,7 @@ class ImgurManager():
         yield cls.image_template.format(image_id)
 
     @classmethod
-    def _get_album(cls, url):
-        parsed = parse.urlparse(url)
+    def _get_album(cls, parsed):
         if parsed.path.endswith('/'):
             path = parsed.path[:-1]
         else:
@@ -106,6 +104,6 @@ class ImgurManager():
 
         parsed = parse.urlparse(url)
         if parsed.path.startswith('/a/'):
-            yield from cls._get_album(url)
+            yield from cls._get_album(parsed)
         else:
-            yield from cls._get_single_image(url)
+            yield from cls._get_single_image(parsed)
