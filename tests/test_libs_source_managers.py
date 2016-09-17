@@ -183,15 +183,15 @@ class TestImgurManager():
                         'images': [
                             {
                                 'hash': '1',
-                                'ext': 'ext'
+                                'ext': '.ext'
                             },
                             {
                                 'hash': '2',
-                                'ext': 'ext'
+                                'ext': '.ext'
                             },
                             {
                                 'hash': '3',
-                                'ext': 'ext'
+                                'ext': '.ext'
                             },
                         ]
                     }
@@ -211,4 +211,5 @@ class TestImgurManager():
             with pytest.raises(StopIteration):
                 next(results)
         else:
-            assert list(manager.get_images(url)) == images
+            result = list(manager.get_images(url))
+            assert result == images

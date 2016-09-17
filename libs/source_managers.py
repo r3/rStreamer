@@ -77,10 +77,7 @@ class ImgurManager():
 
         parsed = parse.urlparse(url)
 
-        if parsed.netloc.startswith('i.') or ext_from_url(url):
-            yield cls.image_template.format(parsed.path[1:])
-        else:
-            # is album
+        if parsed.path.startswith('/a/'):
             index = -2 if parsed.path.endswith('/') else -1
             album_id = parsed.path.split('/')[index]
             album_json = cls.album_template.format(album_id)
@@ -91,3 +88,11 @@ class ImgurManager():
             for result in results['data']['images']:
                 image_id = result['hash'] + result['ext']
                 yield cls.image_template.format(image_id)
+        else:
+            if parsed.path.endswith('/'):
+                path = parsed.path[:-1]
+            else:
+                path = parsed.path
+
+            image_id = path.split('/')[-1]
+            yield cls.image_template.format(image_id)
