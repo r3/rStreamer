@@ -145,22 +145,22 @@ class TestImgurManager():
     def test_match(self, manager, url, is_match):
         assert manager.match(url) == is_match
 
-    @pytest.mark.parametrize('url,images', [
-        # No images or albums referenced
+    @pytest.mark.parametrize('url,image', [
+        # No images referenced
         ('http://imgur.com/', None),
         ('http://i.imgur.com/', None),
         # We don't bother check the extension for imgur links, clean results
-        ('http://imgur.com/foo.bar', [
-            'http://i.imgur.com/foo.bar'
-        ]),
+        ('http://imgur.com/foo.bar', 'http://i.imgur.com/foo.bar'),
         # Identity should work
-        ('http://i.imgur.com/foo.bar', [
-            'http://i.imgur.com/foo.bar'
-        ]),
+        ('http://i.imgur.com/foo.bar', 'http://i.imgur.com/foo.bar'),
         # Even ugly urls should wok
-        ('http://i.imgur.com/foo.bar/', [
-            'http://i.imgur.com/foo.bar'
-        ]),
+        ('http://i.imgur.com/foo.bar/', 'http://i.imgur.com/foo.bar'),
+    ])
+    def test__get_single_image(self, manager, url, image):
+        result = manager.__get_single_image(url)
+        assert next(result) == image
+
+    @pytest.mark.parametrize('url,images', [
         # Albums should be expected to return several results
         ('http://imgur.com/a/foo', [
             'http://i.imgur.com/1.ext',
@@ -175,7 +175,7 @@ class TestImgurManager():
         ]),
 
     ])
-    def test_get_images(self, monkeypatch, manager, url, images):
+    def test__get_album(self, monkeypatch, manager, url, images):
         class MockResponse():
             def read(*args, **kwargs):
                 result = json.dumps({
@@ -213,3 +213,15 @@ class TestImgurManager():
         else:
             result = list(manager.get_images(url))
             assert result == images
+
+    def test_get_images(self, mocker, manager):
+        '''Ensures that get_images routes properly to support methods'''
+        mocker.spy(source_managers.ImgurManager, '__get_single_image')
+        image_url = 'http://i.imgur.com/Foo.bar'
+        manager.get_images(image_url)
+        assert manager.__get_single_image.call_count == 1
+
+        mocker.spy(source_managers.ImgurManager, '__get_album')
+        album_url = 'http://imgur.com/a/Foo'
+        manager.get_images(album_url)
+        assert manager.__get_album.call_count == 1
