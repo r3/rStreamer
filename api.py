@@ -11,7 +11,16 @@ class DummyResource(Resource):
         return {}
 
 
+class ViewSubs(Resource):
+    def get(self, subs):
+        selected = subs.split('+')
+        return {
+            'SubsSelected': selected
+        }
+
+
 api.add_resource(DummyResource, '/')
+api.add_resource(ViewSubs, '/<string:subs>')
 
 if __name__ == '__main__':
     app.run(debug=True)
