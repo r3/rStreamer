@@ -124,6 +124,9 @@ class DeviantArtManager():
 
     @classmethod
     def get_images(cls, url):
+        if not cls.match(url):
+            return
+
         encoded = parse.quote(url, safe="~()*!.'")
         with request.urlopen(cls.query_url.format(encoded)) as response:
             raw = response.read()
