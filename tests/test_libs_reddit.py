@@ -43,9 +43,9 @@ class TestLazilyEvaluatedWrapper():
         assert safe.missing == 'foo'
 
 
-def test_sub_by_name(monkeypatch):
-    def mock_getter(*args, **kwargs):
-        return 'FooBar'
-
-    monkeypatch.setattr(reddit.REDDIT, 'get_subreddit', mock_getter)
-    assert reddit.get_sub_by_name('foo') == 'FooBar'
+class TestSubredditsStream():
+    def test_has_subs_after_initialization():
+        selected = ['foo', 'bar', 'baz']
+        stream = reddit.SubredditsStream(selected,
+                                         sort_func=lambda x, y: x > y)
+        assert stream.subs == selected
