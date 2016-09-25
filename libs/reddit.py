@@ -21,8 +21,7 @@ class LazilyEvaluatedWrapper():
         try:
             return getattr(self.__wrapped, attr)
         except self.to_catch:
-            return self.sentinel
-
-
-def get_sub_by_name(name):
-    return REDDIT.get_subreddit(name)
+            if self.sentinel is not None:
+                return self.sentinel
+            else:
+                raise
