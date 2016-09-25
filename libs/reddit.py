@@ -31,3 +31,6 @@ class SubredditsStream():
     def __init__(self, subreddits, sort_func):
         self.subs = subreddits
         self.sort_func = sort_func
+
+    def __next__(self):
+        return None

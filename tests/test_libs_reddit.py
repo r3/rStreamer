@@ -44,8 +44,15 @@ class TestLazilyEvaluatedWrapper():
 
 
 class TestSubredditsStream():
-    def test_has_subs_after_initialization(self):
-        selected = ['foo', 'bar', 'baz']
-        stream = reddit.SubredditsStream(selected,
-                                         sort_func=lambda x, y: x > y)
-        assert stream.subs == selected
+    test_subs = ['foo', 'bar', 'baz']
+
+    @pytest.fixture()
+    def stream(self):
+        return reddit.SubredditsStream(self.test_subs,
+                                       sort_func=lambda x, y: x > y)
+
+    def test_has_subs_after_initialization(self, stream):
+        assert stream.subs == self.test_subs
+
+    def test_stream_is_iterable(self, stream):
+        assert hasattr(stream, '__next__')
