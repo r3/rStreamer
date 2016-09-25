@@ -44,7 +44,7 @@ class TestLazilyEvaluatedWrapper():
 
 
 class TestSubredditsStream():
-    def test_has_subs_after_initialization():
+    def test_has_subs_after_initialization(self):
         selected = ['foo', 'bar', 'baz']
         stream = reddit.SubredditsStream(selected,
                                          sort_func=lambda x, y: x > y)

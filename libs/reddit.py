@@ -25,3 +25,9 @@ class LazilyEvaluatedWrapper():
                 return self.sentinel
             else:
                 raise
+
+
+class SubredditsStream():
+    def __init__(self, subreddits, sort_func):
+        self.subs = subreddits
+        self.sort_func = sort_func
