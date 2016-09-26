@@ -46,14 +46,14 @@ class TestSubredditsStream():
 
     @pytest.fixture()
     def stream_by_date(self):
-        def by_date(x, y):
-            return x.created_utc > y.created_utc
+        def by_date(x):
+            return x.created_utc
         return reddit.SubredditsStream([foo, bar, baz], sort_func=by_date)
 
     @pytest.fixture()
     def stream_by_score(self):
-        def by_score(x, y):
-            return x.score > y.score
+        def by_score(x):
+            return x.score
         return self._stream(self.sort_by_score, sort_func=by_score)
 
     def test_has_subs_after_initialization(self, base_stream):
