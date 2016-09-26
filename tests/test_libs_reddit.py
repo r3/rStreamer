@@ -62,6 +62,14 @@ class TestSubredditsStream():
     def test_stream_is_iterable(self, base_stream):
         assert hasattr(base_stream, '__next__')
 
+    def test_stream_order_by_score(self, stream_by_score):
+        results = tuple(stream_by_score)
+        assert results == order_by_score
+
+    def test_stream_order_by_date(self, stream_by_date):
+        results = tuple(stream_by_date)
+        assert results == order_by_created_utc
+
 
 class TestLazilyEvaluatedWrapper():
     def test_stopiteration_on_exception(self):
