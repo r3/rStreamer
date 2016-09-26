@@ -1,7 +1,66 @@
+from collections import namedtuple
+
 from praw import errors
 import pytest
 
 from rStream.libs import reddit
+
+
+MockSubreddit = namedtuple('MockSubreddit', ('name', 'submissions'))
+MockSubmission = namedtuple('MockSubmission', ('id', 'score', 'created_utc'))
+
+
+foo = MockSubreddit('foo', [])
+bar = MockSubreddit('bar', [])
+baz = MockSubreddit('baz', [])
+
+foo.submissions.extend([
+    MockSubmission(id='foo1', score=1, created_utc=1000000001.0),
+    MockSubmission(id='foo2', score=2, created_utc=2000000001.0),
+    MockSubmission(id='foo3', score=7, created_utc=3000000001.0)
+])
+bar.submissions.extend([
+    MockSubmission(id='bar1', score=3, created_utc=1000000002.0),
+    MockSubmission(id='bar2', score=4, created_utc=2000000002.0),
+    MockSubmission(id='bar3', score=8, created_utc=3000000002.0)
+])
+baz.submissions.extend([
+    MockSubmission(id='baz1', score=5, created_utc=1000000003.0),
+    MockSubmission(id='baz2', score=6, created_utc=2000000003.0),
+    MockSubmission(id='baz3', score=9, created_utc=3000000003.0)
+])
+order_by_score = ('foo1', 'foo2', 'bar1', 'bar2', 'baz1', 'baz2', 'foo3',
+                  'bar3', 'baz3')
+order_by_created_utc = ('foo1', 'bar1', 'baz1', 'foo2', 'bar2', 'baz2',
+                        'foo3', 'bar3', 'baz3')
+
+
+class TestSubredditsStream():
+    test_subs = ['foo', 'bar', 'baz']
+
+    @pytest.fixture()
+    def base_stream(self):
+        def null(*args, **kwargs):
+            return True
+        return reddit.SubredditsStream(self.test_subs, sort_func=null)
+
+    @pytest.fixture()
+    def stream_by_date(self):
+        def by_date(x, y):
+            return x.created_utc > y.created_utc
+        return reddit.SubredditsStream([foo, bar, baz], sort_func=by_date)
+
+    @pytest.fixture()
+    def stream_by_score(self):
+        def by_score(x, y):
+            return x.score > y.score
+        return self._stream(self.sort_by_score, sort_func=by_score)
+
+    def test_has_subs_after_initialization(self, base_stream):
+        assert base_stream.subs == self.test_subs
+
+    def test_stream_is_iterable(self, base_stream):
+        assert hasattr(base_stream, '__next__')
 
 
 class TestLazilyEvaluatedWrapper():
@@ -41,18 +100,3 @@ class TestLazilyEvaluatedWrapper():
                                              AttributeError,
                                              sentinel='foo')
         assert safe.missing == 'foo'
-
-
-class TestSubredditsStream():
-    test_subs = ['foo', 'bar', 'baz']
-
-    @pytest.fixture()
-    def stream(self):
-        return reddit.SubredditsStream(self.test_subs,
-                                       sort_func=lambda x, y: x > y)
-
-    def test_has_subs_after_initialization(self, stream):
-        assert stream.subs == self.test_subs
-
-    def test_stream_is_iterable(self, stream):
-        assert hasattr(stream, '__next__')
