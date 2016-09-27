@@ -5,6 +5,30 @@ user_agent = 'test'  # TODO: Centralize this, and import it properly
 REDDIT = praw.Reddit(user_agent=user_agent)
 
 
+class SubredditsStream():
+    class SubredditWrapper():
+        def __init__(self, name, func):
+            subreddit = REDDIT.get_subreddit(name)
+
+            self.__submission_gen = getattr(subreddit, func)()
+            self.next_submission = next(self.__submission_gen)
+
+        def __next__(self):
+            self.next_submission = next(self.sub_gen)
+            return self.next_submission
+
+    def __getter(self, wrapped_subreddit):
+        return self.key(wrapped_subreddit.next_submission)
+
+    def __init__(self, subreddits, key, func):
+        self.subs = [self.SubredditWrapper(x, func) for x in subreddits]
+        self.key = key
+
+    def __next__(self):
+        subreddit = max(self.subs, key=self.__getter)
+        return next(subreddit)
+
+
 class LazilyEvaluatedWrapper():
     def __init__(self, wrapped, to_catch, sentinel=None):
         self.__wrapped = wrapped
@@ -25,12 +49,3 @@ class LazilyEvaluatedWrapper():
                 return self.sentinel
             else:
                 raise
-
-
-class SubredditsStream():
-    def __init__(self, subreddits, sort_func):
-        self.subs = subreddits
-        self.sort_func = sort_func
-
-    def __next__(self):
-        return None
