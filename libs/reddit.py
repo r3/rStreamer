@@ -14,8 +14,9 @@ class SubredditsStream():
             self.next_submission = next(self.__submission_gen)
 
         def __next__(self):
-            self.next_submission = next(self.sub_gen)
-            return self.next_submission
+            result = self.next_submission
+            self.next_submission = next(self.__submission_gen)
+            return result
 
     def __getter(self, wrapped_subreddit):
         return self.key(wrapped_subreddit.next_submission)
