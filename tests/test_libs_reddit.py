@@ -22,25 +22,26 @@ MockSubmission = namedtuple('MockSubmission', ('id', 'score', 'created_utc'))
 
 
 foo = MockSubreddit('foo', [
-    MockSubmission(id='foo1', score=1, created_utc=1000000001.0),
+    MockSubmission(id='foo3', score=7, created_utc=3000000001.0),
     MockSubmission(id='foo2', score=2, created_utc=2000000001.0),
-    MockSubmission(id='foo3', score=7, created_utc=3000000001.0)
+    MockSubmission(id='foo1', score=1, created_utc=1000000001.0)
 ])
 bar = MockSubreddit('bar', [
-    MockSubmission(id='bar1', score=3, created_utc=1000000002.0),
+    MockSubmission(id='bar3', score=8, created_utc=3000000002.0),
     MockSubmission(id='bar2', score=4, created_utc=2000000002.0),
-    MockSubmission(id='bar3', score=8, created_utc=3000000002.0)
+    MockSubmission(id='bar1', score=3, created_utc=1000000002.0)
 ])
 baz = MockSubreddit('baz', [
-    MockSubmission(id='baz1', score=5, created_utc=1000000003.0),
+    MockSubmission(id='baz3', score=9, created_utc=3000000003.0),
     MockSubmission(id='baz2', score=6, created_utc=2000000003.0),
-    MockSubmission(id='baz3', score=9, created_utc=3000000003.0)
+    MockSubmission(id='baz1', score=5, created_utc=1000000003.0)
 ])
 
-order_by_score = ['foo1', 'foo2', 'bar1', 'bar2', 'baz1', 'baz2', 'foo3',
-                  'bar3', 'baz3']
-order_by_created_utc = ['foo1', 'bar1', 'baz1', 'foo2', 'bar2', 'baz2',
-                        'foo3', 'bar3', 'baz3']
+order_by_score = ['baz3', 'bar3', 'foo3', 'baz2', 'baz1', 'bar2', 'bar1',
+                  'foo2', 'foo1']
+order_by_created_utc = ['baz3', 'bar3', 'foo3', 'baz2', 'bar2', 'foo2',
+                        'baz1', 'bar1', 'foo1']
+
 mock_subs = (foo, bar, baz)
 
 

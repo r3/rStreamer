@@ -10,24 +10,39 @@ class SubredditsStream():
         def __init__(self, name, func):
             subreddit = REDDIT.get_subreddit(name)
 
+            self.subreddit = subreddit
             self.__submission_gen = getattr(subreddit, func)()
             self.next_submission = next(self.__submission_gen)
 
         def __next__(self):
             result = self.next_submission
-            self.next_submission = next(self.__submission_gen)
+            try:
+                self.next_submission = next(self.__submission_gen)
+            except StopIteration:
+                self.next_submission = None
+
             return result
 
-    def __getter(self, wrapped_subreddit):
-        return self.key(wrapped_subreddit.next_submission)
+        def __str__(self):
+            return self.subreddit.id
+
+    def _getter(self, wrapped_subreddit):
+        next_submission = wrapped_subreddit.next_submission
+        if next_submission is None:
+            return -1
+
+        return self.key(next_submission)
 
     def __init__(self, subreddits, key, func):
         self.subs = [self.SubredditWrapper(x, func) for x in subreddits]
         self.key = key
 
     def __next__(self):
-        subreddit = max(self.subs, key=self.__getter)
-        return next(subreddit)
+        subreddit = max(self.subs, key=self._getter)
+        result = next(subreddit)
+        if result is None:
+            raise StopIteration
+        return result
 
     def __iter__(self):
         while True:
