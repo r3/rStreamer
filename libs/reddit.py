@@ -29,6 +29,13 @@ class SubredditsStream():
         subreddit = max(self.subs, key=self.__getter)
         return next(subreddit)
 
+    def __iter__(self):
+        while True:
+            try:
+                yield next(self)
+            except StopIteration:
+                break
+
 
 class LazilyEvaluatedWrapper():
     def __init__(self, wrapped, to_catch, sentinel=None):

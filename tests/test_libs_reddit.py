@@ -9,11 +9,14 @@ from rStream.libs import reddit
 class MockSubreddit():
     def __init__(self, name, submissions):
         self.name = name
-        self.submissions = iter(submissions)
+        self.submissions = submissions
 
-    def __next__(self):
-        return next(self.submissions)
+    def __getattr__(self, attr):
+        def func(*args, **kwargs):
+            return iter(self.submissions)
 
+        if 'get_' in attr:
+            return func
 
 MockSubmission = namedtuple('MockSubmission', ('id', 'score', 'created_utc'))
 
@@ -34,25 +37,30 @@ baz = MockSubreddit('baz', [
     MockSubmission(id='baz3', score=9, created_utc=3000000003.0)
 ])
 
-order_by_score = ('foo1', 'foo2', 'bar1', 'bar2', 'baz1', 'baz2', 'foo3',
-                  'bar3', 'baz3')
-order_by_created_utc = ('foo1', 'bar1', 'baz1', 'foo2', 'bar2', 'baz2',
-                        'foo3', 'bar3', 'baz3')
+order_by_score = ['foo1', 'foo2', 'bar1', 'bar2', 'baz1', 'baz2', 'foo3',
+                  'bar3', 'baz3']
+order_by_created_utc = ['foo1', 'bar1', 'baz1', 'foo2', 'bar2', 'baz2',
+                        'foo3', 'bar3', 'baz3']
 mock_subs = (foo, bar, baz)
 
 
 class TestSubredditsStream():
-    @pytest.fixture()
-    def stream_by_date(self):
-        def by_date(x):
-            return x.created_utc
-        return reddit.SubredditsStream(mock_subs, key=by_date)
+    def _identity(self, name):
+        return name
 
     @pytest.fixture()
-    def stream_by_score(self):
+    def stream_by_date(self, monkeypatch):
+        def by_date(x):
+            return x.created_utc
+        monkeypatch.setattr(reddit.REDDIT, 'get_subreddit', self._identity)
+        return reddit.SubredditsStream(mock_subs, key=by_date, func='get_hot')
+
+    @pytest.fixture()
+    def stream_by_score(self, monkeypatch):
         def by_score(x):
             return x.score
-        return reddit.SubredditsStream(mock_subs, key=by_score)
+        monkeypatch.setattr(reddit.REDDIT, 'get_subreddit', self._identity)
+        return reddit.SubredditsStream(mock_subs, key=by_score, func='get_hot')
 
     def test_has_subs_after_initialization(self, stream_by_date):
         assert stream_by_date.subs
@@ -61,11 +69,11 @@ class TestSubredditsStream():
         assert hasattr(stream_by_date, '__next__')
 
     def test_stream_order_by_score(self, stream_by_score):
-        results = tuple(stream_by_score)
+        results = [x.id for x in stream_by_score]
         assert results == order_by_score
 
     def test_stream_order_by_date(self, stream_by_date):
-        results = tuple(stream_by_date)
+        results = [x.id for x in stream_by_date]
         assert results == order_by_created_utc
 
 
