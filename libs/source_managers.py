@@ -6,12 +6,6 @@ from urllib import parse, request
 from rStream import CONFIG_FILE
 
 
-def images_from_url(url):
-    for manager in SOURCE_MANAGERS:
-        if manager.match(url):
-            return manager.get_images(url)
-
-
 def ext_from_url(url):
     path = parse.urlparse(url).path
     if path.startswith('/'):

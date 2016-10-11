@@ -23,25 +23,6 @@ def test_ext_from_url(test_url, expected_extension):
     assert source_managers.ext_from_url(test_url) == expected_extension
 
 
-def test_images_from_url(monkeypatch):
-    expected = ['foo', 'bar', 'baz']
-
-    class MockSourceManager():
-        @classmethod
-        def match(cls, *args, **kwargs):
-            return True
-
-        @classmethod
-        def get_images(cls, *args, **kwargs):
-            return iter(expected)
-
-    monkeypatch.setattr(source_managers,
-                        'SOURCE_MANAGERS',
-                        [MockSourceManager])
-    results = source_managers.images_from_url('http://test.com')
-    assert list(results) == expected
-
-
 class TestDirectLinkManager():
     @pytest.fixture()
     def manager(self):
