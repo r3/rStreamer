@@ -6,6 +6,54 @@ import pytest
 from rStream.libs import reddit
 
 
+HasUrl = namedtuple('HasUrl', ['url'])
+
+
+def test_submission_filter(monkeypatch):
+    class MockSourceManager():
+        results = {
+            'http://test.com/1': ['a'],
+            'http://test.com/2': ['a', 'b'],
+            'http://test.com/3': ['a', 'b', 'c']
+        }
+
+        def __init__(*args, **kwargs):
+            pass
+
+        @classmethod
+        def match(cls, url):
+            return url in cls.results
+
+        @classmethod
+        def get_images(cls, url):
+            return cls.results.get(url)
+
+    def mock_iterable():
+        yield from iter([
+            HasUrl('http://test.com/1'),
+            HasUrl('http://foo.bar/'),  # Shouldn't get past filter
+            HasUrl('http://test.com/2'),
+            HasUrl('http://bar.baz/'),  # Shouldn't get past filter
+            HasUrl('http://test.com/3')
+        ])
+
+    monkeypatch.setattr(reddit.source_managers,
+                        'SOURCE_MANAGERS',
+                        [MockSourceManager])
+
+    filtered = reddit.submission_filter(mock_iterable())
+
+    assert next(filtered) == ['a']
+    assert next(filtered) == ['a', 'b']
+    assert next(filtered) == ['a', 'b', 'c']
+
+    with pytest.raises(StopIteration):
+        next(filtered)
+
+
+MockSubmission = namedtuple('MockSubmission', ('id', 'score', 'created_utc'))
+
+
 class MockSubreddit():
     def __init__(self, name, submissions):
         self.name = name
@@ -17,8 +65,6 @@ class MockSubreddit():
 
         if 'get_' in attr:
             return func
-
-MockSubmission = namedtuple('MockSubmission', ('id', 'score', 'created_utc'))
 
 
 foo = MockSubreddit('foo', [

@@ -1,8 +1,17 @@
 import praw
 
+from rStream.libs import source_managers
+
 
 user_agent = 'test'  # TODO: Centralize this, and import it properly
 REDDIT = praw.Reddit(user_agent=user_agent)
+
+
+def submission_filter(iterable):
+    for submission in iterable:
+        for manager in source_managers.SOURCE_MANAGERS:
+            if manager.match(submission.url):
+                yield [x for x in manager.get_images(submission.url)]
 
 
 class SubredditsStream():
