@@ -60,4 +60,3 @@ app.secret_key = 'test'
 
 if __name__ == '__main__':
     app.run(debug=True)
-    flask.g.content_streams = dict()
