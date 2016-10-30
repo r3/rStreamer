@@ -11,13 +11,26 @@ user_agent = 'test'  # TODO: Centralize this, and import it properly
 REDDIT = praw.Reddit(user_agent=user_agent)
 
 
+def info_from_submission(submission, source_manager):
+    return {
+        'url': submission.url,
+        'score': submission.score,
+        'title': submission.title,
+        'nsfw': submission.over_18,
+        'link': submission.permalink,
+        'subreddit': submission.subreddit.display_name,
+        'date': submission.created,
+        'images': list(source_manager.get_images(submission.url))
+    }
+
+
 def submission_filter(iterable):
     for submission in iterable:
         for manager in source_managers.SOURCE_MANAGERS:
             if manager.match(submission.url):
                 msg = "Found manager to support url, '{}'"
                 logger.info(msg.format(submission.url))
-                yield [x for x in manager.get_images(submission.url)]
+                yield info_from_submission(submission, manager)
 
 
 class SubredditsStream():
