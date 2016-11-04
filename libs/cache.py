@@ -1,7 +1,7 @@
 import threading
 
 
-TIMEOUT = 10.0  # In seconds
+TIMEOUT = 60.0  # In seconds
 
 
 class ExpirationTimer(threading.Timer):
@@ -58,6 +58,15 @@ class ExpiringDict(dict):
 
     def __delitem__(self, key):
         with self.lock:
-            value = super().__getitem__(key)
-            value.timeout.cancel()
-            super().__delitem__(key)
+            try:
+                value = super().__getitem__(key)
+                value.timeout.cancel()
+                super().__delitem__(key)
+            except KeyError:
+                return
+
+    def get(self, key, default=None):
+        try:
+            return self[key]
+        except KeyError:
+            return default

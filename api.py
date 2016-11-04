@@ -4,11 +4,15 @@ import flask
 from flask_restful import Resource, Api
 
 from rStream.libs import reddit
+from rStream.libs.cache import ExpiringDict
+
+
+TIMEOUT = 5 * 60
 
 
 app = flask.Flask(__name__)
 api = Api(app)
-content_store = dict()
+content_store = ExpiringDict()
 
 
 def take_n(iterable, number):
@@ -47,7 +51,8 @@ class ViewSubs(Resource):
 class IterSubs(Resource):
     def get(self, count):
         ident = flask.session['id']
-        filtered_stream = content_store[ident]
+        #TODO: if stream has timed out, redirect to error page, or flash
+        filtered_stream = content_store.get(ident)
         app.logger.debug('Retrieved UUID: {}'.format(ident))
         return flask.jsonify(take_n(filtered_stream, count))
 
