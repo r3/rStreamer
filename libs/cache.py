@@ -4,7 +4,7 @@ import threading
 TIMEOUT = 60.0  # In seconds
 
 
-class ExpirationTimer(threading.Timer):
+class ExpirationTimer():
     def __init__(self, timeout, func, *args, **kwargs):
         self.timeout = timeout
         self.func = func
@@ -32,6 +32,9 @@ class ExpirationTimer(threading.Timer):
 
     def cancel(self):
         self.__timer.cancel()
+
+    def is_alive(self):
+        return self.__timer.is_alive()
 
 
 class Expirable():
