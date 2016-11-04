@@ -34,7 +34,7 @@ class TestExpirationTimer():
         polling_timer.join()
 
 
-def TestExpirable():
+def test_Expirable():
     expirable = cache.Expirable('foo', 'bar')
     assert hasattr(expirable, 'stream')
     assert getattr(expirable, 'stream') == 'foo'
