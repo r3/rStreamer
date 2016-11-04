@@ -18,10 +18,13 @@ class ExpirationTimer(threading.Timer):
         except AttributeError:
             pass
 
-        self.__timer = threading.Timer(self.timeout,
-                                       self.func,
-                                       *self.args,
-                                       **self.kwargs)
+        self.__timer = threading.Timer(
+            self.timeout,
+            self.func,
+            *self.args,
+            **self.kwargs
+        )
+
         self.__timer.start()
 
     def start(self):
@@ -70,3 +73,33 @@ class ExpiringDict(dict):
             return self[key]
         except KeyError:
             return default
+
+    def clear(self, *args, **kwargs):
+        raise NotImplementedError()
+
+    def copy(self, *args, **kwargs):
+        raise NotImplementedError()
+
+    def fromkeys(self, *args, **kwargs):
+        raise NotImplementedError()
+
+    def items(self, *args, **kwargs):
+        raise NotImplementedError()
+
+    def keys(self, *args, **kwargs):
+        raise NotImplementedError()
+
+    def pop(self, *args, **kwargs):
+        raise NotImplementedError()
+
+    def popitem(self, *args, **kwargs):
+        raise NotImplementedError()
+
+    def setdefault(self, *args, **kwargs):
+        raise NotImplementedError()
+
+    def update(self, *args, **kwargs):
+        raise NotImplementedError()
+
+    def values(self, *args, **kwargs):
+        raise NotImplementedError()
