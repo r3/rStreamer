@@ -1,6 +1,8 @@
 import time
 import threading
 
+import pytest
+
 from rStream.libs import cache
 
 
@@ -50,3 +52,39 @@ def test_Expirable():
     assert getattr(expirable, 'stream') == 'foo'
     assert hasattr(expirable, 'timeout')
     assert getattr(expirable, 'timeout') == 'bar'
+
+
+class TestExpiringDict():
+    @pytest.fixture()
+    def expiringdict(self):
+        return cache.ExpiringDict()
+
+    @pytest.fixture()
+    def seeded_dict(self, monkeypatch, expiringdict):
+        monkeypatch.setattr(cache, 'TIMEOUT', 0.5)
+        expiringdict['foo'] = 'bar'
+        return expiringdict
+
+    def test_assignment(self, expiringdict):
+        expiringdict['foo'] = 'bar'
+        assert 'foo' in expiringdict
+
+    def test_lookup(self, seeded_dict):
+        assert seeded_dict['foo'] == 'bar'
+
+    def test_deletion(self, seeded_dict):
+        del seeded_dict['foo']
+        assert 'foo' not in seeded_dict
+
+    def test_get_existing(self, seeded_dict):
+        assert seeded_dict.get('foo') == 'bar'
+
+    def test_get_not_existing(self, seeded_dict):
+        sentinel = object()
+        assert seeded_dict.get('DOESNTEXIST', sentinel) is sentinel
+        assert seeded_dict.get('DOESNTEXIST') is None
+
+    def test_timeout(self, seeded_dict):
+        assert 'foo' in seeded_dict
+        time.sleep(1.0)
+        assert 'foo' not in seeded_dict
